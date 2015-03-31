@@ -1,7 +1,7 @@
 F@h plasmoid
 ============
 
-This repository contains the source code of a KDE plasmoid that displays the que current progress of the simulation running the the local F@H Client.
+This repository contains the source code of a KDE plasmoid that displays the que current progress of the simulation running on the local F@H Client.
 
 Currently only KDE4 is supported, but a version for the new plasma 5 is planned.
 
