@@ -53,6 +53,13 @@ class FAHApplet(plasmascript.Applet):
         self.progress.setStyleSheet("font-size: 80px")
         self.layout.addItem(self.progress, 1, 3, 4, 1)
 
+        self.connectBtn = Plasma.PushButton(self.applet)
+        self.connectBtn.setText("Connect")
+        self.connect(self.connectBtn,
+                     SIGNAL("clicked ()"),
+                     self.connectToEngine)
+        self.layout.addItem(self.connectBtn, 4, 3, 1, 1)
+
         # General Actions
         self.setAspectRatioMode(Plasma.IgnoreAspectRatio)
         self.applet.setLayout(self.layout)
@@ -61,22 +68,30 @@ class FAHApplet(plasmascript.Applet):
     def connectToEngine(self):
         self.FAHEngine = self.dataEngine("fah-plasmoid-data-engine")
         self.FAHEngine.connectSource("FAHStatus", self, 5000)
+        self.connectBtn.hide()
+        self.progress.show()
 
     @pyqtSignature("dataUpdated(const QString &, const Plasma::DataEngine::Data &)")
     def dataUpdated(self, sourceName, data):
         fah_data = data[QString('status')]
-        self.username.setText(fah_data[QString("user")])
-        self.team.setText(fah_data[QString("team")])
 
-        date = str(fah_data[QString("start_time")])
-        dt = datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ")
-        self.start_date.setText(dt.strftime("%d-%m-%Y %H:%M"))
+        if QString("error") not in fah_data:
+            self.username.setText(fah_data[QString("user")])
+            self.team.setText(fah_data[QString("team")])
 
-        deadline = datetime.fromtimestamp(fah_data[QString("deadline")])
-        self.deadline.setText(deadline.strftime("%d-%m-%Y %H:%M"))
+            date = str(fah_data[QString("start_time")])
+            dt = datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ")
+            self.start_date.setText(dt.strftime("%d-%m-%Y %H:%M"))
 
-        progress = "%3.1f" % (fah_data[QString('progress')] * 100)
-        self.progress.setText(progress + "%")
+            deadline = datetime.fromtimestamp(fah_data[QString("deadline")])
+            self.deadline.setText(deadline.strftime("%d-%m-%Y %H:%M"))
+
+            progress = "%3.1f" % (fah_data[QString('progress')] * 100)
+            self.progress.setText(progress + "%")
+        else:
+            self.FAHEngine.disconnectSource("FAHStatus", self)
+            self.progress.hide()
+            self.connectBtn.show()
 
 
 def CreateApplet(parent):
